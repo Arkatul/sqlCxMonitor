@@ -96,30 +96,34 @@ BEGIN
     FROM sys.dm_exec_sessions AS s
     WHERE s.is_user_process = 1
       AND s.database_id > 4
-      AND s.database_id IS NOT NULL
-      AND NOT EXISTS
-      (
-          SELECT 1
-          FROM dbo.CapturedSessions AS cs
-          WHERE cs.session_id = s.session_id
-            AND cs.login_time = s.login_time
-            AND cs.SnapshotHour = @snapshot_hour
-      );
+      AND s.database_id IS NOT NULL;
 
-    INSERT INTO dbo.CapturedSessions (session_id, login_time, SnapshotHour)
-    SELECT DISTINCT
-        s.session_id,
-        s.login_time,
-        @snapshot_hour
-    FROM #Sessions AS s
-    WHERE NOT EXISTS
+    DELETE FROM #Sessions
+    WHERE EXISTS
     (
         SELECT 1
-        FROM dbo.CapturedSessions AS cs WITH (UPDLOCK, HOLDLOCK)
-        WHERE cs.session_id = s.session_id
-          AND cs.login_time = s.login_time
+        FROM dbo.CapturedSessions AS cs
+        WHERE cs.session_id = #Sessions.session_id
+          AND cs.login_time = #Sessions.login_time
           AND cs.SnapshotHour = @snapshot_hour
     );
+
+    WITH TempSessions AS
+    (
+        SELECT DISTINCT
+            session_id,
+            login_time,
+            @snapshot_hour AS SnapshotHour
+        FROM #Sessions
+    )
+    MERGE INTO dbo.CapturedSessions AS target
+    USING TempSessions AS source
+        ON source.session_id = target.session_id
+       AND source.login_time = target.login_time
+       AND source.SnapshotHour = target.SnapshotHour
+    WHEN NOT MATCHED THEN
+        INSERT (session_id, login_time, SnapshotHour)
+        VALUES (source.session_id, source.login_time, source.SnapshotHour);
 
     WITH Aggregated AS
     (
