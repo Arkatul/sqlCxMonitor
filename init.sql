@@ -107,8 +107,19 @@ BEGIN
       );
 
     INSERT INTO dbo.CapturedSessions (session_id, login_time, SnapshotHour)
-    SELECT DISTINCT session_id, login_time, @snapshot_hour
-    FROM #Sessions;
+    SELECT DISTINCT
+        s.session_id,
+        s.login_time,
+        @snapshot_hour
+    FROM #Sessions AS s
+    WHERE NOT EXISTS
+    (
+        SELECT 1
+        FROM dbo.CapturedSessions AS cs WITH (UPDLOCK, HOLDLOCK)
+        WHERE cs.session_id = s.session_id
+          AND cs.login_time = s.login_time
+          AND cs.SnapshotHour = @snapshot_hour
+    );
 
     WITH Aggregated AS
     (
