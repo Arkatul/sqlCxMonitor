@@ -53,12 +53,16 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID('dbo.usp_CaptureSessionSnapshots', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_CaptureSessionSnapshots;
+GO
+
 SET ANSI_NULLS ON;
 GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
-CREATE OR ALTER PROCEDURE dbo.usp_CaptureSessionSnapshots
+CREATE PROCEDURE dbo.usp_CaptureSessionSnapshots
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -133,12 +137,16 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID('dbo.vw_DatabaseSessionTotalsByPrincipal', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_DatabaseSessionTotalsByPrincipal;
+GO
+
 SET ANSI_NULLS ON;
 GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
-CREATE OR ALTER VIEW dbo.vw_DatabaseSessionTotalsByPrincipal
+CREATE VIEW dbo.vw_DatabaseSessionTotalsByPrincipal
 AS
 WITH UserDatabases AS
 (
@@ -166,12 +174,16 @@ LEFT JOIN SessionTotals AS st
     ON st.DatabaseName = u.DatabaseName;
 GO
 
+IF OBJECT_ID('dbo.vw_DatabaseSessionDailyTotalsByPrincipal', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_DatabaseSessionDailyTotalsByPrincipal;
+GO
+
 SET ANSI_NULLS ON;
 GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
-CREATE OR ALTER VIEW dbo.vw_DatabaseSessionDailyTotalsByPrincipal
+CREATE VIEW dbo.vw_DatabaseSessionDailyTotalsByPrincipal
 AS
 WITH UserDatabases AS
 (
@@ -230,12 +242,16 @@ SELECT
 FROM ZeroFill;
 GO
 
+IF OBJECT_ID('dbo.vw_DatabaseSessionTotalsByDatabase', 'V') IS NOT NULL
+    DROP VIEW dbo.vw_DatabaseSessionTotalsByDatabase;
+GO
+
 SET ANSI_NULLS ON;
 GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
-CREATE OR ALTER VIEW dbo.vw_DatabaseSessionTotalsByDatabase
+CREATE VIEW dbo.vw_DatabaseSessionTotalsByDatabase
 AS
 WITH UserDatabases AS
 (
